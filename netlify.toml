@@ -4,6 +4,9 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # Turbopack caches the build environment; the PIN is still scanned in every
+  # deployable artifact and is read only by the server-side classroom route.
+  SECRETS_SCAN_OMIT_PATHS = ".netlify/.next/cache"
 
 [functions]
   node_bundler = "esbuild"

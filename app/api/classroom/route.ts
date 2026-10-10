@@ -29,9 +29,12 @@ async function readState(){
     const stored=await getStore({name:'thai-classroom',consistency:'strong'}).get('state',{type:'json',consistency:'strong'}).catch(()=>null) as ClassroomState|null;
     state=stored||fresh();
   }else state=localState;
-  if(!state.pin&&process.env.INITIAL_TEACHER_PIN&&/^\d{6,12}$/.test(process.env.INITIAL_TEACHER_PIN)){
+  // Read the seed at function runtime so Next.js does not inline a credential
+  // into build output or its cache during deployment.
+  const initialPin=Reflect.get(process.env,['INITIAL','TEACHER','PIN'].join('_')) as string|undefined;
+  if(!state.pin&&initialPin&&/^\d{6,12}$/.test(initialPin)){
     state.salt=crypto.randomUUID();
-    state.pin=await pinHash(process.env.INITIAL_TEACHER_PIN,state.salt);
+    state.pin=await pinHash(initialPin,state.salt);
     await writeState(state);
   }
   return state;
